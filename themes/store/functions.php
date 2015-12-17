@@ -5,20 +5,25 @@
  * @package store
  */
 
-add_action("init","teste");
-function teste(){
-	global $wp_session;
+add_filter('relevanssi_hits_filter', 'order_the_results');
+function order_the_results($hits) {
+    global $wp_query;
+ 
+    $likes = array();
+	foreach ($hits[0] as $hit) {
+		$likecount = get_post_meta($hit->ID, 'preco', true);
+    	if (!isset($likes[$likecount])) $likes[$likecount] = array();
+    			array_push($likes[$likecount], $hit);
+		}
 
-	$wp_session['cart_items'] = array(
-		array(
-			'item_id'   => 43,
-			'item_name' => 'My Product Name'
-		),
-		array(
-			'item_id'   => 22,
-			'item_name' => 'My Second Product Name'
-		)	
-	);
+		ksort($likes);
+  		$sorted_hits = array();
+	foreach ($likes as $likecount => $year_hits) {
+     		$sorted_hits = array_merge($sorted_hits, $year_hits);
+    }
+	$hits[0] = $sorted_hits;
+
+    return $hits;
 }
 
 

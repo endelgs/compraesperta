@@ -16,21 +16,14 @@
 		<div class="out-thumb col-md-8 col-sm-8">
 			<header class="entry-header">
 				<h1 class="entry-title title-font"><a class="hvr-underline-reveal" href="<?php the_permalink(); ?>" rel="bookmark"><?php the_title(); ?></a></h1>
-				<div class="postedon">
-					<?php 
+				<h4><?php 
 						$disponivel = get_field('disponivel_em');
 						$array_disponivel = array();
-						if(is_array($disponivel)){
-							echo "Disponível em: ";
-							foreach($disponivel as $item){
-								$array_disponivel = apply_filters('the_title',$item->post_title);
-							}
-							echo (is_array($array_disponivel))?implode($array_disponivel):$array_disponivel;
-							echo " - (R$".get_field('preco').")";
+						if(is_object($disponivel)){
+							echo apply_filters('the_title',$disponivel->post_title);
+							echo " - <span class='red'>R$".number_format(get_field('preco'),2,",",".").'</span>';
 						}
-					?>
-				</div>
-				<span class="readmore"><a class="hvr-underline-from-center" href="<?php the_permalink() ?>"><?php _e('Read More','store'); ?></a></span>
+					?></h4>
 			</header><!-- .entry-header -->
 		</div><!--.out-thumb-->
 			
