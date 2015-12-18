@@ -24,7 +24,7 @@
 							echo " - <span class='red'>R$".number_format(get_field('preco'),2,",",".").'</span>';
 						}
 					?></h4>
-					<a href="">Adicionar à cesta</a>
+				<a onclick="javascript: $.get(window.location.href + '?add_to_cart=' + <?php echo get_field('preco') ?>)"></a>
 			</header><!-- .entry-header -->
 		</div><!--.out-thumb-->
 			
