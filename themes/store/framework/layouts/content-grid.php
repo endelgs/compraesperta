@@ -24,6 +24,7 @@
 							echo " - <span class='red'>R$".number_format(get_field('preco'),2,",",".").'</span>';
 						}
 					?></h4>
+					<a href="">Adicionar à cesta</a>
 			</header><!-- .entry-header -->
 		</div><!--.out-thumb-->
 			

@@ -26,6 +26,49 @@ function order_the_results($hits) {
     return $hits;
 }
 
+// SESSION HANDLING ====================================================
+add_action('init','session_start_');
+function session_start_(){
+	session_start();
+}
+
+// ADICIONANDO ITEMS AO CARRINHO =======================================
+add_action('init','add_to_cart');
+function add_to_cart(){
+	if(!isset($_GET['add_to_cart']))
+		return;
+
+ 	if(!is_array($_SESSION['cart_items']))
+ 		$_SESSION['cart_items'] = array();
+	array_push($_SESSION['cart_items'],$_GET['add_to_cart']);
+	$_SESSION['cart_items'] = array_unique($_SESSION['cart_items']);
+}
+
+// GERANDO A LISTA DE ITENS DO CARRINHO ===============================
+add_shortcode('cart','view_cart');
+function view_cart(){
+	if(isset($_SESSION['cart_items'])){
+		foreach($_SESSION['cart_items'] as $item){
+			// The Query
+			$the_query = new WP_Query( $args );
+
+			// The Loop
+			if ( $the_query->have_posts() ) {
+				echo '<ul>';
+				while ( $the_query->have_posts() ) {
+					$the_query->the_post();
+					echo '<li>' . get_the_title() . '</li>';
+				}
+				echo '</ul>';
+			} else {
+				// no posts found
+			}
+			/* Restore original Post Data */
+			wp_reset_postdata();
+		}
+	}
+
+}
 
 if ( ! function_exists( 'store_setup' ) ) :
 /**
