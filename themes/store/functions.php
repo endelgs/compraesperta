@@ -30,6 +30,10 @@ function order_the_results($hits) {
 add_action('init','session_start_');
 function session_start_(){
 	session_start();
+	if(isset($_GET['limpar_cesta'])){
+		unset($_SESSION['cart_items']);
+		wp_redirect( home_url() ); exit;
+	}
 }
 
 // ADICIONANDO ITEMS AO CARRINHO =======================================
@@ -40,32 +44,88 @@ function add_to_cart(){
 
  	if(!is_array($_SESSION['cart_items']))
  		$_SESSION['cart_items'] = array();
-	array_push($_SESSION['cart_items'],$_GET['add_to_cart']);
-	$_SESSION['cart_items'] = array_unique($_SESSION['cart_items']);
+
+ 	$refcode = $_GET['add_to_cart'];
+ 	if(isset($_SESSION['cart_items'][$refcode])){
+ 		$_SESSION['cart_items'][$refcode]++;
+ 	}else{
+ 		$_SESSION['cart_items'][$refcode] = 1;
+ 	}
 }
+
 
 // GERANDO A LISTA DE ITENS DO CARRINHO ===============================
 add_shortcode('cart','view_cart');
 function view_cart(){
 	if(isset($_SESSION['cart_items'])){
-		foreach($_SESSION['cart_items'] as $item){
-			// The Query
-			$the_query = new WP_Query( $args );
+		// The Query
+		$the_query = new WP_Query(array(
+			'post_type' => 'produto',
+			'meta_key' 	=> 'preco',
+			'orderby' => array('title' => 'ASC','meta_value_num'=>'ASC'),
+			'meta_query' => array(
+				array(
+					'key'     => 'refcode',
+					'value'   => array_keys($_SESSION['cart_items']),
+					'compare' => 'IN',
+				),
+			),
+			'posts_per_page' => -1
+		));
 
-			// The Loop
-			if ( $the_query->have_posts() ) {
-				echo '<ul>';
-				while ( $the_query->have_posts() ) {
-					$the_query->the_post();
-					echo '<li>' . get_the_title() . '</li>';
-				}
-				echo '</ul>';
-			} else {
-				// no posts found
+		// The Loop
+		if ( $the_query->have_posts() ) {
+			
+			$estabelecimentos = array();
+			while ( $the_query->have_posts() ) {
+
+				$the_query->the_post();
+				$estabelecimentos[get_field('disponivel_em')->post_title][] = $the_query->post;
 			}
-			/* Restore original Post Data */
-			wp_reset_postdata();
+
+			$sorted = array();
+			
+			$i = 0;
+			foreach($estabelecimentos as $k => $items){
+				if(count($items) < count($_SESSION['cart_items']))
+					continue;
+
+				$class = ($i==0)?'class="best"':'';
+				$html = "<div>";
+				$melhor_compra = ($i==0)?" - Melhor compra!":"";
+				$html .= "<h3 $class>".$k.$melhor_compra."</h3>";
+				
+				$html .= '<table>';
+				$html .= '<tr><td><strong>Produto</strong></td><td><strong>Quantidade</strong></td><td><strong>Preço</strong></td><td><strong>Total</strong></td></tr>';
+				$total = 0;
+				foreach($items as $item){
+					$qtd = $_SESSION['cart_items'][get_field('refcode',$item->ID)];
+					$preco = number_format(get_field('preco',$item->ID),2,",",".");
+					$html .= "<tr>";
+					$html .= '<td>' . $item->post_title . '</td>';
+					$html .= '<td>' . $qtd . '</td>';
+					$html .= '<td>R$'.$preco.'</td>';
+					$html .= '<td>R$'.number_format(get_field('preco',$item->ID)*$qtd,2,",",".").'</td>';
+					$html .= "</tr>";
+					$total += get_field('preco',$item->ID)*$qtd;
+				}
+				$html .= "<tr><td></td><td></td><td>TOTAL</td><td><strong class='red'>R$ ".number_format($total,2,",",".")."</strong></td></tr>";
+				
+				$html .= '</table>';
+				$html .= "</div>";
+				$sorted[number_format($total,2,",",".").'_'.$k] = $html;
+				$i++;
+			}
+			ksort($sorted);
+			echo implode("",$sorted);
+			echo "<a href='?limpar_cesta=1'>Limpar cestas</a>";
+			
+		} else {
+			// no posts found
+			echo "sem produtos no carrinho";
 		}
+		/* Restore original Post Data */
+		wp_reset_postdata();
 	}
 
 }

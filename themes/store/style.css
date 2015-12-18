@@ -53,6 +53,10 @@ input.search-field {
     padding: 8px;
     width: 600px;
 }
+h3.best{
+	font-weight: bold;
+	color:#c00;
+}
 
 /*--------------------------------------------------------------
 1.0 Reset

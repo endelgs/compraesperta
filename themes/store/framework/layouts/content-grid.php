@@ -24,7 +24,7 @@
 							echo " - <span class='red'>R$".number_format(get_field('preco'),2,",",".").'</span>';
 						}
 					?></h4>
-				<a onclick="javascript: $.get(window.location.href + '?add_to_cart=' + <?php echo get_field('preco') ?>)"></a>
+				<a onclick="javascript: jQuery.get(window.location.href + '?add_to_cart=' + <?php echo get_field('refcode') ?>,function(){alert('Produto adicionado à cesta!')})">Adicionar à cesta</a>
 			</header><!-- .entry-header -->
 		</div><!--.out-thumb-->
 			
